@@ -130,6 +130,18 @@ class MboxFileIngestor(EmailFileIngestor):
                 log.exception(ex)
 
 
+class MaildirIngestor(EmailFileIngestor):
+    BASE_SCORE = 8
+
+    @classmethod
+    def match(cls, meta, local_path):
+        score = -1
+        filename = os.path.basename(meta.source_path)
+        if ':2,' in filename:
+            return cls.BASE_SCORE
+        return score
+
+
 class OutlookIngestor(TextIngestor):
     MIME_TYPES = ['application/vnd.ms-outlook']
     EXTENSIONS = ['pst']
