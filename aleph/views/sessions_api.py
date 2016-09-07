@@ -90,6 +90,22 @@ def handle_google_oauth(sender, provider=None, session=None):
     session['user'] = role.id
 
 
+@signals.handle_oauth_session.connect
+def handle_correctiv_oauth(sender, provider=None, session=None):
+    if 'correctiv.org' not in provider.base_url:
+        return
+
+    me = provider.get('api/user')
+    user_id = 'correctiv:%s' % me.data.get('id')
+    is_staff = me.data.get('is_staff', False)
+    role = Role.load_or_create(user_id, Role.USER,
+        u'%s %s' % (me.data.get('first_name', ''), me.data.get('last_name', '')),
+        email=me.data.get('email'),
+        is_admin=is_staff)
+    session['roles'].append(role.id)
+    session['user'] = role.id
+
+
 @blueprint.route('/api/1/sessions/callback')
 def callback():
     resp = oauth_provider.authorized_response()
